@@ -25,19 +25,21 @@ const getSupportedModels = async (): Promise<Record<string, boolean>> => {
   const openAiKey = get(apiKeyStorage)
   if (!openAiKey) return {}
   try {
-        const result = (await (
-          await fetch(getApiBase() + getEndpointModels(), {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${openAiKey}`,
-              'Content-Type': 'application/json'
-            }
-          })
-        ).json()) as ResponseModels
-        availableModels = result.data.reduce((a, v) => {
-          a[v.id] = v
-          return a
-        }, {})
+        // const result = (await (
+        //   await fetch(getApiBase() + getEndpointModels(), {
+        //     method: 'GET',
+        //     headers: {
+        //       Authorization: `Bearer ${openAiKey}`,
+        //       'Content-Type': 'application/json'
+        //     }
+        //   })
+        // ).json()) as ResponseModels
+        // availableModels = result.data.reduce((a, v) => {
+        //   console.log('v', v)
+        //   a[v.id] = v
+        //   return a
+        // }, {})
+        availableModels = []
         return availableModels
   } catch (e) {
         availableModels = {}
@@ -51,6 +53,7 @@ export const checkModel = async (modelDetail: ModelDetail) => {
   const supportedModels = await getSupportedModels()
   if (modelDetail.type === 'chat' || modelDetail.type === 'instruct') {
         modelDetail.enabled = !!supportedModels[modelDetail.modelQuery || '']
+        modelDetail.enabled = true
   } else {
         // image request.  If we have any models, allow image endpoint
         modelDetail.enabled = !!Object.keys(supportedModels).length

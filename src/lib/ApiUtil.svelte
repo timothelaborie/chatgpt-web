@@ -1,6 +1,7 @@
 <script context="module" lang="ts">
   // This makes it possible to override the OpenAI API base URL in the .env file
-  const apiBase = import.meta.env.VITE_API_BASE || 'https://api.openai.com'
+  // const apiBase = import.meta.env.VITE_API_BASE || 'https://api.openai.com'
+  const apiBase = import.meta.env.VITE_API_BASE || 'https://openrouter.ai/api'
   const endpointCompletions = import.meta.env.VITE_ENDPOINT_COMPLETIONS || '/v1/chat/completions'
   const endpointGenerations = import.meta.env.VITE_ENDPOINT_GENERATIONS || '/v1/images/generations'
   const endpointModels = import.meta.env.VITE_ENDPOINT_MODELS || '/v1/models'

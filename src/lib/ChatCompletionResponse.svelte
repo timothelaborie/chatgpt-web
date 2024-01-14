@@ -167,7 +167,7 @@ export class ChatCompletionResponse {
   updateFromError (errorMessage: string): void {
     if (this.finished || this.error) return
     this.error = errorMessage
-    if (this.opts.autoAddMessages) {
+    if (this.opts.autoAddMessages && errorMessage != "Unexpected end of JSON input") {
       addMessage(this.chat.id, {
         role: 'error',
         content: `Error: ${errorMessage}`,

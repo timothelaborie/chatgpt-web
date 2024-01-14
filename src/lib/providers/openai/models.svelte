@@ -1,13 +1,45 @@
 <script context="module" lang="ts">
-    import { getApiBase, getEndpointCompletions, getEndpointGenerations } from '../../ApiUtil.svelte'
-    import { countTokens } from '../../Models.svelte'
-    import { countMessageTokens } from '../../Stats.svelte'
-    import { globalStorage } from '../../Storage.svelte'
-    import type { Chat, Message, Model, ModelDetail } from '../../Types.svelte'
-    import { chatRequest, imageRequest } from './request.svelte'
-    import { checkModel } from './util.svelte'
-    import { encode } from 'gpt-tokenizer'
-    import { get } from 'svelte/store'
+
+
+
+import { getApiBase, getEndpointCompletions, getEndpointGenerations } from '../../ApiUtil.svelte'
+import { countTokens } from '../../Models.svelte'
+import { countMessageTokens } from '../../Stats.svelte'
+import { globalStorage } from '../../Storage.svelte'
+import type { Chat, Message, Model, ModelDetail } from '../../Types.svelte'
+import { chatRequest, imageRequest } from './request.svelte'
+import { checkModel } from './util.svelte'
+import { encode } from 'gpt-tokenizer'
+import { get } from 'svelte/store'
+
+let modelsList = {
+"data": [
+{
+"id": "nousresearch/nous-capybara-34b",
+"name": "Nous: Capybara 34B",
+"description": "This model is trained on the Yi-34B model for 3 epochs on the Capybara dataset. It's the first 34B Nous model and first 200K context length Nous model.\n\n**Note:** This endpoint currently supports 32k context.",
+"pricing": {
+"prompt": "0.0000007",
+"completion": "0.0000028"
+},
+"context_length": 32768,
+"architecture": {
+"tokenizer": "Llama2",
+"instruct_type": "vicuna"
+},
+"top_provider": {
+"max_completion_tokens": null
+},
+"per_request_limits": {
+"prompt_tokens": "5301093",
+"completion_tokens": "1325273"
+}
+}
+]
+}
+
+
+
 
 const hiddenSettings = {
       startSequence: true,
@@ -56,53 +88,43 @@ const chatModelBase = {
   }
 } as ModelDetail
 
-// Reference: https://openai.com/pricing#language-models
-const gpt35 = {
-      ...chatModelBase,
-      prompt: 0.0000015, // $0.0015 per 1000 tokens prompt
-      completion: 0.000002, // $0.002 per 1000 tokens completion
-      max: 4096 // 4k max token buffer
-}
-const gpt3516k = {
-      ...chatModelBase,
-      prompt: 0.000001, // $0.001 per 1000 tokens prompt
-      completion: 0.0000015, // $0.0015 per 1000 tokens completion
-      max: 16384 // 16k max token buffer
-}
-const gpt4 = {
-      ...chatModelBase,
-      prompt: 0.00003, // $0.03 per 1000 tokens prompt
-      completion: 0.00006, // $0.06 per 1000 tokens completion
-      max: 8192 // 8k max token buffer
-}
-const gpt432k = {
-      ...chatModelBase,
-      prompt: 0.00006, // $0.06 per 1000 tokens prompt
-      completion: 0.00012, // $0.12 per 1000 tokens completion
-      max: 32768 // 32k max token buffer
-}
-const gpt4128kpreview = {
-      ...chatModelBase,
-      prompt: 0.00001, // $0.01 per 1000 tokens prompt
-      completion: 0.00003, // $0.03 per 1000 tokens completion
-      max: 131072 // 128k max token buffer
+
+
+function fetchModelsList() {
+  const request = new XMLHttpRequest();
+  request.open('GET', 'https://openrouter.ai/api/v1/models', false); // false for synchronous request
+  request.send(null);
+
+  if (request.status === 200) {
+    const data = JSON.parse(request.responseText);
+    modelsList.data = data.data;
+    console.log("fetched models list");
+  } else {
+    throw new Error(`HTTP error! status: ${request.status}`);
+  }
 }
 
-export const chatModels : Record<string, ModelDetail> = {
-  'gpt-3.5-turbo': { ...gpt3516k },
-  'gpt-3.5-turbo-0301': { ...gpt35 },
-  'gpt-3.5-turbo-0613': { ...gpt35 },
-  'gpt-3.5-turbo-1106': { ...gpt3516k },
-  'gpt-3.5-turbo-16k': { ...gpt3516k },
-  'gpt-3.5-turbo-16k-0613': { ...gpt3516k },
-  'gpt-4': { ...gpt4 },
-  'gpt-4-0314': { ...gpt4 },
-  'gpt-4-0613': { ...gpt4 },
-  'gpt-4-1106-preview': { ...gpt4128kpreview },
-  'gpt-4-32k': { ...gpt432k },
-  'gpt-4-32k-0314': { ...gpt432k },
-  'gpt-4-32k-0613': { ...gpt432k }
+
+function generateModels(modelsList: any): any {
+  console.log("generateModels");
+  fetchModelsList();
+  const models: any = {};
+
+  modelsList.data.forEach((model: any) => {
+    models[model.id] = {
+      ...chatModelBase,
+      prompt: parseFloat(model.pricing.prompt),
+      completion: parseFloat(model.pricing.completion),
+      max: model.context_length
+    };
+  });
+
+  return models;
 }
+
+export const chatModels : Record<string, ModelDetail> = generateModels(modelsList);
+
+
 
 const imageModelBase = {
   type: 'image',
@@ -198,3 +220,4 @@ export const imageModels : Record<string, ModelDetail> = {
 }
 
 </script>
+
