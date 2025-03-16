@@ -23,6 +23,7 @@ export interface ChatImage {
 export type Message = {
     role: 'user' | 'assistant' | 'system' | 'error' | 'image';
     content: string;
+    reasoning?: string;
     uuid: string;
     usage?: Usage;
     model?: Model;
@@ -60,6 +61,7 @@ export type Request = {
   };
 
 export type ChatSettings = {
+    provider: string;
     profile: string,
     characterName: string,
     profileName: string,

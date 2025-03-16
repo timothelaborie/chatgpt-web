@@ -82,7 +82,8 @@ const gptDefaults = {
   presence_penalty: 0,
   frequency_penalty: 0,
   logit_bias: null,
-  user: undefined
+  user: undefined,
+  provider: ''
 }
 
 // Core set of defaults
@@ -445,6 +446,20 @@ const chatSettingsList: ChatSetting[] = [
       ...summarySettings,
       // ...responseAlterationSettings,
       modelSetting,
+      {
+        key: 'provider',
+        name: 'Provider',
+        title: 'Specify a provider to use for this model (e.g., "OpenAI", "Together", "Anthropic"). Leave empty to use the default provider selection.',
+        type: 'text',
+        placeholder: 'Default provider',
+        apiTransform: (chatId, setting, val: string) => {
+          if (!val || val.trim() === '') return undefined;
+          // If a provider is specified, transform it into the format expected by OpenRouter
+          return {
+            order: [val.trim()]
+          };
+        }
+      },
       {
         key: 'stream',
         name: 'Stream Response',

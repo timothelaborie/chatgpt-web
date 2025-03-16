@@ -125,7 +125,7 @@ export class ChatCompletionResponse {
     this.finish()
   }
 
-  updateFromAsyncResponse (response: Response) {
+  updateFromAsyncResponse(response: Response) {
     let completionTokenCount = 0
     this.setModel(response.model)
     if (!response.choices || response?.error) {
@@ -138,10 +138,19 @@ export class ChatCompletionResponse {
         uuid: uuidv4()
       } as Message
       choice.delta?.role && (message.role = choice.delta.role)
-      if (choice.delta?.content) {
-        message.content = this.initialFillMerge(message.content, choice.delta?.content)
-        message.content += choice.delta.content
+      
+      // Check if delta exists
+      if (choice.delta) {
+        // If content is empty string but reasoning exists and is not empty, use reasoning
+        if (choice.delta.content === "" && choice.delta.reasoning && choice.delta.reasoning !== "") {
+          message.content = this.initialFillMerge(message.content, choice.delta.reasoning)
+          message.content += choice.delta.reasoning
+        } else if (choice.delta.content) {
+          message.content = this.initialFillMerge(message.content, choice.delta.content)
+          message.content += choice.delta.content
+        }
       }
+      
       completionTokenCount += countTokens(this.model, message.content)
       message.model = response.model
       message.finish_reason = choice.finish_reason
